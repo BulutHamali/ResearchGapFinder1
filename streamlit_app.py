@@ -4,8 +4,6 @@ ResearchGapFinder — Streamlit UI
 
 import json
 import os
-import threading
-import time
 from datetime import datetime
 
 import httpx
@@ -550,34 +548,57 @@ if analyze_btn and query.strip():
         "llm_preset": preset,
     }
 
-    steps = [
-        (8,  "Expanding query with MeSH synonyms…"),
-        (20, "Retrieving papers from PubMed…"),
-        (38, "Cleaning abstracts and extracting concepts…"),
-        (54, "Generating embeddings…"),
-        (65, "Clustering papers…"),
-        (76, "Detecting research gaps…"),
-        (88, "Generating and scoring hypotheses…"),
-        (95, "Designing experiments…"),
-    ]
+    log_lines: list = []
+    _terminal = st.empty()
 
-    progress_bar = st.progress(0, text="Initialising…")
+    def _render_terminal():
+        rows = []
+        for ln in log_lines[-60:]:
+            esc = ln.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            if "[ERROR]" in ln or "[CRITICAL]" in ln:
+                col = "#ff7b72"
+            elif "[WARNING]" in ln:
+                col = "#d29922"
+            elif any(k in ln.lower() for k in ("complete", "success", "initialized", "done", "ready")):
+                col = "#3fb950"
+            else:
+                col = "#8b949e"
+            rows.append(f'<div style="color:{col};white-space:pre-wrap;margin:1px 0">{esc}</div>')
+        body = "\n".join(rows) if rows else '<div style="color:#484f58">Connecting to backend…</div>'
+        _terminal.markdown(
+            f"""<div style="background:#010409;border:1px solid #30363d;border-radius:8px;
+padding:14px 18px;font-family:'JetBrains Mono','Courier New',monospace;
+font-size:0.78rem;line-height:1.6;height:340px;overflow-y:auto;">
+<div style="color:#3fb950;font-weight:700;margin-bottom:8px;letter-spacing:.06em">
+▶ RESEARCHGAPFINDER — LIVE LOG</div>{body}</div>""",
+            unsafe_allow_html=True,
+        )
+
+    _render_terminal()
     result = None
     error  = None
-    done   = threading.Event()
-
-    def _animate():
-        for pct, msg in steps:
-            if done.is_set(): break
-            progress_bar.progress(pct, text=msg)
-            time.sleep(4)
-
-    threading.Thread(target=_animate, daemon=True).start()
 
     try:
-        response = httpx.post(f"{backend_url}/analyze", json=payload, timeout=600)
-        response.raise_for_status()
-        result = response.json()
+        with httpx.stream(
+            "POST", f"{backend_url}/analyze-stream", json=payload, timeout=600
+        ) as resp:
+            resp.raise_for_status()
+            for raw in resp.iter_lines():
+                raw = raw.strip()
+                if not raw:
+                    continue
+                try:
+                    ev = json.loads(raw)
+                except json.JSONDecodeError:
+                    continue
+                if ev.get("type") == "log":
+                    log_lines.append(ev["msg"])
+                    _render_terminal()
+                elif ev.get("type") == "result":
+                    result = ev["data"]
+                elif ev.get("type") == "error":
+                    error = ev["msg"]
+                    break
     except httpx.HTTPStatusError as e:
         error = f"Backend error {e.response.status_code}: {e.response.text[:300]}"
     except httpx.ConnectError:
@@ -585,8 +606,7 @@ if analyze_btn and query.strip():
     except Exception as e:
         error = str(e)
     finally:
-        done.set()
-        progress_bar.empty()
+        _terminal.empty()
 
     if error:
         st.markdown(f'<div class="banner-error">⚠ &nbsp;{error}</div>', unsafe_allow_html=True)
