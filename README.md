@@ -102,7 +102,7 @@ Streamlit UI + JSON Report (with full evidence trails)
 | Embeddings | `all-MiniLM-L6-v2` (default) · `FremyCompany/BioLORD-2023` (max_quality) |
 | Vector database | FAISS (default) · Pinecone (optional) |
 | Clustering | HDBSCAN, scikit-learn k-means |
-| LLM | Groq API — Llama 3.1 8B / Llama 3.3 70B |
+| LLM | Groq API — `llama-3.1-8b-instant` / `llama-3.3-70b-versatile` |
 | Caching | diskcache (disk-based, SHA-256 keyed) |
 | Rate limiting | Async token bucket (3 req/s PubMed, 10 req/s Groq) |
 | Deployment | Render (Docker, two services) |
@@ -111,11 +111,11 @@ Streamlit UI + JSON Report (with full evidence trails)
 
 ## Quality Presets
 
-| Preset | LLM | Embeddings | Max Papers | RAM | Best For |
-|--------|-----|-----------|-----------|-----|---------|
-| `cheap_fast` | Llama 3.1 8B | MiniLM | 500 | ~150 MB | Quick demos, free tier |
-| `balanced` | Llama 3.3 70B | MiniLM | 2,000 | ~150 MB | Free tier, good quality |
-| `max_quality` | Llama 3.3 70B | BioLORD | 5,000 | ~1.5 GB | Real research, paid tier |
+| Preset | LLM (Groq model ID) | Embeddings | Max Papers | RAM | Best For |
+|--------|---------------------|-----------|-----------|-----|---------|
+| `cheap_fast` | `llama-3.1-8b-instant` | MiniLM | 500 | ~150 MB | Quick demos, free tier |
+| `balanced` | `llama-3.3-70b-versatile` | MiniLM | 2,000 | ~150 MB | Free tier, good quality |
+| `max_quality` | `llama-3.3-70b-versatile` | BioLORD | 5,000 | ~1.5 GB | Real research, paid tier |
 
 ---
 
@@ -258,12 +258,13 @@ cp .env.example .env
 
 **`.env` variables:**
 ```
-GROQ_API_KEY=your_groq_api_key
-PINECONE_API_KEY=your_pinecone_key   # optional — FAISS is used by default
-PUBMED_EMAIL=you@example.com
+GROQ_API_KEY=your_groq_api_key_here
+PINECONE_API_KEY=your_pinecone_api_key_here   # optional — FAISS is used by default
+PUBMED_EMAIL=your_email@example.com
 LLM_PRESET=balanced
 VECTOR_DB=faiss
 CACHE_DIR=.cache
+BACKEND_URL=http://localhost:8000             # override if frontend points to a remote backend
 ```
 
 ---
@@ -273,6 +274,7 @@ CACHE_DIR=.cache
 **Terminal 1 — Backend:**
 ```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8000
+# or: python app/main.py  (reads PORT env var, defaults to 8000)
 ```
 
 **Terminal 2 — Frontend:**
@@ -359,6 +361,7 @@ The repo includes a `render.yaml` blueprint that deploys two services automatica
 3. Set the secret environment variables when prompted:
    - `GROQ_API_KEY`
    - `PUBMED_EMAIL`
+   - `PINECONE_API_KEY` *(optional — leave blank to use FAISS)*
 4. Click **Apply** — both services build and deploy automatically
 
 **Live URLs after deploy:**
