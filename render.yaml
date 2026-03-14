@@ -28,7 +28,4 @@ services:
     plan: free
     envVars:
       - key: BACKEND_URL
-        fromService:
-          name: researchgapfinder-backend
-          type: web
-          property: url      # automatically wired to backend's public URL
+        value: https://researchgapfinder-backend.onrender.com
