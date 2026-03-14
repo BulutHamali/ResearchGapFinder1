@@ -11,7 +11,8 @@ import httpx
 import plotly.graph_objects as go
 import streamlit as st
 
-BACKEND_URL = "http://localhost:8000"
+import os
+BACKEND_URL = os.environ.get("BACKEND_URL", "http://localhost:8000")
 
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
