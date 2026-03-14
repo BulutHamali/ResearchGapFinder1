@@ -1,0 +1,34 @@
+services:
+  # ── Backend (FastAPI) ──────────────────────────────────────────────────────
+  - type: web
+    name: researchgapfinder-backend
+    env: docker
+    dockerfilePath: ./Dockerfile.backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false          # set manually in Render dashboard
+      - key: PINECONE_API_KEY
+        sync: false
+      - key: PUBMED_EMAIL
+        sync: false
+      - key: LLM_PRESET
+        value: balanced
+      - key: VECTOR_DB
+        value: faiss
+      - key: CACHE_DIR
+        value: /tmp/.cache   # use /tmp on Render (writable)
+
+  # ── Frontend (Streamlit) ───────────────────────────────────────────────────
+  - type: web
+    name: researchgapfinder-frontend
+    env: docker
+    dockerfilePath: ./Dockerfile.frontend
+    plan: free
+    envVars:
+      - key: BACKEND_URL
+        fromService:
+          name: researchgapfinder-backend
+          type: web
+          property: url      # automatically wired to backend's public URL
