@@ -116,9 +116,9 @@ with st.sidebar:
         "Max Papers",
         min_value=50,
         max_value=5000,
-        value=500,
+        value=100,
         step=50,
-        help="Upper bound on papers retrieved. Larger values take longer.",
+        help="Upper bound on papers retrieved. Larger values take longer. 100 is recommended for demos.",
     )
 
     col1, col2 = st.columns(2)
