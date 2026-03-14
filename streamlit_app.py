@@ -106,9 +106,9 @@ with st.sidebar:
         options=["cheap_fast", "balanced", "max_quality"],
         index=1,
         help=(
-            "**cheap_fast** — small model, up to 500 papers, fastest\n\n"
-            "**balanced** — large model, up to 2,000 papers, recommended\n\n"
-            "**max_quality** — large model, up to 5,000 papers, thorough"
+            "**cheap_fast** — small LLM, MiniLM embeddings, up to 500 papers, fastest\n\n"
+            "**balanced** — large LLM, MiniLM embeddings, up to 2,000 papers, recommended for free tier\n\n"
+            "**max_quality** — large LLM, BioLORD embeddings (biomedical-grade), up to 5,000 papers — requires more RAM"
         ),
     )
 

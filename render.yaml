@@ -14,7 +14,7 @@ services:
       - key: PUBMED_EMAIL
         sync: false
       - key: LLM_PRESET
-        value: balanced
+        value: balanced      # cheap_fast for lowest RAM, max_quality for BioLORD embeddings
       - key: VECTOR_DB
         value: faiss
       - key: CACHE_DIR

@@ -16,7 +16,7 @@ PRESETS = {
     "balanced": {
         "llm_model": "llama-3.3-70b-versatile",
         "max_tokens": 4096,
-        "embedding_model": "FremyCompany/BioLORD-2023",
+        "embedding_model": "all-MiniLM-L6-v2",  # lightweight for free-tier deployment
         "vector_db": "faiss",
         "max_papers_default": 2000,
         "min_cluster_size": 10,
