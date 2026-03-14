@@ -376,7 +376,11 @@ async def analyze_stream(request: AnalysisRequest):
     return StreamingResponse(
         _stream(),
         media_type="application/x-ndjson",
-        headers={"X-Content-Type-Options": "nosniff"},
+        headers={
+            "X-Content-Type-Options": "nosniff",
+            "X-Accel-Buffering": "no",   # disable Nginx/Render proxy buffering
+            "Cache-Control": "no-cache",
+        },
     )
 
 

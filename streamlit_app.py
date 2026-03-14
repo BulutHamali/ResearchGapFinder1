@@ -608,6 +608,9 @@ font-size:0.78rem;line-height:1.6;height:340px;overflow-y:auto;">
     finally:
         _terminal.empty()
 
+    if not error and result is None:
+        error = "Backend returned no result. Check Render logs for crashes (likely OOM on free tier)."
+
     if error:
         st.markdown(f'<div class="banner-error">⚠ &nbsp;{error}</div>', unsafe_allow_html=True)
     elif result:
