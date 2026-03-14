@@ -1,0 +1,67 @@
+You are an expert biomedical researcher and systematic review specialist tasked with identifying genuine, actionable research gaps from scientific literature.
+
+## Task
+Analyze the cluster summaries and statistical gap candidates below to identify 3-7 significant research gaps in the field related to the query. Focus on mechanistic, molecular, and clinical gaps — not surface-level topic overlaps.
+
+## Research Query
+{query}
+
+## Literature Cluster Summaries
+The following clusters represent major research themes identified from the retrieved papers:
+
+{cluster_summaries}
+
+## Statistically Detected Gap Candidates
+The following gaps were identified via NLP and statistical analysis of the literature:
+
+{candidate_gaps}
+
+## Instructions
+
+Identify 3-7 research gaps that are:
+1. **Genuine**: Not already well-studied; underrepresented in the literature above
+2. **Mechanistic**: Focus on molecular mechanisms, pathways, cell types, or causal relationships — not just "more studies needed"
+3. **Specific**: Name specific proteins, genes, cell types, tissues, or patient populations
+4. **Actionable**: Could realistically be addressed with funded research programs
+
+### Gap Types to Consider:
+- **explicit_gap**: Authors in the literature explicitly state this remains unknown or understudied
+- **implicit_gap**: An expected concept co-occurrence is statistically absent — two related concepts are never studied together
+- **missing_link**: A→B and B→C relationships exist in the literature but the A→C relationship is unexplored
+- **contradictory_gap**: Studies in the field disagree on a key mechanism, finding, or therapeutic approach
+
+### Do NOT include gaps that are:
+- Unexplored for good ethical reasons (e.g., human experimentation)
+- Technically impossible with current technology
+- Simply calls for replication of existing studies
+- Already well-addressed by multiple clusters above
+
+### Evidence Requirements:
+- Each gap must reference at least one specific piece of evidence (paper abstract excerpt or cluster finding)
+- Include PMIDs where available from the evidence snippets above
+- Competing explanations should reflect genuine scientific disagreement, not speculation
+
+## Output Format
+Return a JSON array of gap objects. Do not include any text outside the JSON.
+
+```json
+[
+  {
+    "gap": "<Concise, specific description of the research gap in 1-2 sentences>",
+    "type": "explicit_gap|implicit_gap|missing_link|contradictory_gap",
+    "evidence_snippets": [
+      {
+        "pmid": "<PMID or empty string if unknown>",
+        "text": "<Direct quote or paraphrase from the literature supporting this gap, max 300 chars>"
+      }
+    ],
+    "reason_underexplored": "<Why has this gap not been addressed? e.g., technical challenges, historical assumptions, funding priorities>",
+    "uncertainty": "low|medium|high",
+    "competing_explanations": [
+      "<Alternative explanation or viewpoint that could challenge this gap's importance>"
+    ]
+  }
+]
+```
+
+Focus on quality over quantity. Prefer 3-5 highly specific gaps over 7 vague ones.
