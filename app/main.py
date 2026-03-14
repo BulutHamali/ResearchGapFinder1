@@ -1,4 +1,5 @@
 import asyncio
+import gc
 import json
 import logging
 import queue as _queue
@@ -63,6 +64,11 @@ async def lifespan(app: FastAPI):
     _components["paper_clusterer"] = PaperClusterer()
     _components["gap_scorer"] = GapScorer()
 
+    # Pre-warm the default embedding model while memory is empty,
+    # so it's already loaded before any request data enters memory
+    from embedding.embedder import Embedder
+    Embedder(model_name="all-MiniLM-L6-v2")
+    gc.collect()
     logger.info("ResearchGapFinder initialized successfully")
     yield
 
@@ -200,6 +206,7 @@ def _run_analysis_sync(request: AnalysisRequest) -> AnalysisResponse:
     texts = embedder.papers_to_texts(papers_with_concepts)
     embeddings = embedder.embed(texts)
     logger.info(f"Embedding: {len(embeddings)} vectors, dim={embedder.dim} in {time.time()-t0:.1f}s")
+    gc.collect()
 
     # 6. Build vector store
     t0 = time.time()
@@ -221,6 +228,7 @@ def _run_analysis_sync(request: AnalysisRequest) -> AnalysisResponse:
     cluster_evaluator = ClusterEvaluator()
     cluster_summaries_raw = cluster_evaluator.evaluate(embeddings, labels, papers_with_concepts)
     logger.info(f"Cluster evaluation: complete in {time.time()-t0:.1f}s")
+    gc.collect()
 
     cluster_summaries_schema = [
         ClusterSummary(
